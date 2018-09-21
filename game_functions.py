@@ -7,14 +7,15 @@ from bullet import Bullet
 from alien import Alien
 
 
-def check_keydown_events(event, ai_settings, screen, ship, bullets):
+def check_keydown_events(event, ai_settings, screen, ship, bullets,
+                         laser_sound):
     """Respond to keypresses."""
     if event.key == pygame.K_RIGHT:
         ship.moving_right = True
     elif event.key == pygame.K_LEFT:
         ship.moving_left = True
     elif event.key == pygame.K_SPACE:
-        fire_bullet(ai_settings, screen, ship, bullets)
+        fire_bullet(ai_settings, screen, ship, bullets, laser_sound)
     elif event.key == pygame.K_q:
         sys.exit()
 
@@ -28,13 +29,14 @@ def check_keyup_events(event, ship):
 
 
 def check_events(ai_settings, screen, stats, sb, play_button, ship, aliens,
-                 bullets):
+                 bullets, laser_sound):
     """Respond to keypresses and mouse events."""
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
         elif event.type == pygame.KEYDOWN:
-            check_keydown_events(event, ai_settings, screen, ship, bullets)
+            check_keydown_events(event, ai_settings, screen, ship, bullets,
+                                 laser_sound)
         elif event.type == pygame.KEYUP:
             check_keyup_events(event, ship)
         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -67,11 +69,12 @@ def check_play_button(ai_settings, screen, stats, sb, play_button, ship,
         ship.center_ship()
 
 
-def fire_bullet(ai_settings, screen, ship, bullets):
+def fire_bullet(ai_settings, screen, ship, bullets, laser_sound):
     """Fire a bullet, if limit not reached yet."""
     if len(bullets) < ai_settings.bullets_allowed:
         new_bullet = Bullet(ai_settings, screen, ship)
         bullets.add(new_bullet)
+        laser_sound.play()
 
 
 def update_screen(ai_settings, screen, stats, sb, ship, aliens, bullets,
@@ -166,6 +169,8 @@ def ship_hit(ai_settings, screen, stats, sb, ship, aliens, bullets):
         # this should be in the else block if the move_aliens_top works
         create_fleet(ai_settings, screen, ship, aliens)
 
+        pygame.mixer.Sound('sounds/game_over.ogg').play()
+
     bullets.empty()
     ship.center_ship()
 
@@ -182,7 +187,8 @@ def check_aliens_bottom(ai_settings, screen, stats, sb, ship, aliens,
             break
 
 
-def update_aliens(ai_settings, screen, stats, sb, ship, aliens, bullets):
+def update_aliens(ai_settings, screen, stats, sb, ship, aliens, bullets,
+                  alien_explosion):
     """
     Check if the fleet is at an edge,
       then update the postions of all aliens in the fleet.
@@ -192,6 +198,7 @@ def update_aliens(ai_settings, screen, stats, sb, ship, aliens, bullets):
 
     if pygame.sprite.spritecollideany(ship, aliens):
         ship_hit(ai_settings, screen, stats, sb, ship, aliens, bullets)
+        alien_explosion.play()
 
     check_aliens_bottom(ai_settings, screen, stats, sb, ship, aliens, bullets)
 
@@ -223,9 +230,6 @@ def create_alien(ai_settings, screen, aliens, alien_number, row_number,
     alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
     aliens.add(alien)
 
-    if (row_number == 0):
-        print("first row y: " + str(alien.rect.y))
-
 
 def create_fleet(ai_settings, screen, ship, aliens):
     """Create a full fleet of aliens."""
@@ -243,14 +247,11 @@ def create_fleet(ai_settings, screen, ship, aliens):
 def move_aliens_top(ai_settings, screen, ship, aliens):
     alien = Alien(ai_settings, screen)
     top_y = alien.rect.height
-    print("y: " + str(top_y))
 
     prev_alien_y = aliens.sprites()[0].rect.y
 
     for alien in aliens.sprites():
         if (alien.rect.y > prev_alien_y):
-            print("last alien y: " + str(prev_alien_y) + " current y: " +
-                  str(alien.rect.y))
-            top_y += alien.rect.height + 2
-        alien.rect.y = top_y
+            top_y += 2 * alien.rect.height
         prev_alien_y = alien.rect.y
+        alien.rect.y = top_y

@@ -28,16 +28,19 @@ def run_game():
 
     gf.create_fleet(ai_settings, screen, ship, aliens)
 
+    laser_sound = pygame.mixer.Sound('sounds/laser.ogg')
+    alien_explosion = pygame.mixer.Sound('sounds/explosion1.ogg')
+
     while True:
         gf.check_events(ai_settings, screen, stats, sb, play_button, ship,
-                        aliens, bullets)
+                        aliens, bullets, laser_sound)
 
         if stats.game_active:
             ship.update()
             gf.update_bullets(ai_settings, screen, stats, sb, ship, aliens,
                               bullets)
             gf.update_aliens(ai_settings, screen, stats, sb, ship, aliens,
-                             bullets)
+                             bullets, alien_explosion)
 
         gf.update_screen(ai_settings, screen, stats, sb, ship, aliens,
                          bullets, play_button)
