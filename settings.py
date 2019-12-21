@@ -7,7 +7,7 @@ class Settings():
         self.screen_height = 800
         self.bg_color = (230, 230, 230)
 
-        self.ship_limit = 0
+        self.ship_limit = 3
 
         self.bullet_width = 3
         self.bullet_height = 15
@@ -26,7 +26,7 @@ class Settings():
         """Initialize settings that change throughout the game."""
         self.ship_speed_factor = 1.5
         self.bullet_speed_factor = 3
-        self.alien_speed_factor = 1
+        self.alien_speed_factor = 0.3
 
         self.alien_points = 50
 
